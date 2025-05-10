@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vampire Survivor (Web)</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- Comic-style font -->
+  <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <!-- Joystick for mobile/touch controls -->
+  <div id="joystick-container">
+    <div id="joystick-base">
+      <div id="joystick-knob"></div>
+    </div>
+  </div>
+  <div id="stage">Stage: 1</div>
+  <div id="timer">Time: 0:00</div>
+  <div id="hud">
+    <div id="stats">
+      <div id="health">HP: 100</div>
+      <div id="shield">Shield: 0</div>
+      <div id="xp">XP: 0</div>
+      <div id="stat-damage"></div>
+      <div id="stat-projectiles"></div>
+      <div id="stat-projectile-size"></div>
+      <div id="stat-area-radius"></div>
+      <div id="stat-area-damage"></div>
+      <div id="stat-burn"></div>
+      <div id="stat-freeze"></div>
+      <div id="stat-attack-speed"></div>
+      <div id="stat-regen"></div>
+      <div id="stat-knockback"></div>
+      <div id="stat-invincible"></div>
+      <div id="stat-move-speed"></div>
+      <div id="stat-crit"></div>
+      <div id="stat-reflect"></div>
+      <div id="stat-lifesteal"></div>
+    </div>
+  </div>
+  <div id="upgradeModal" style="display:none;"></div>
+  <div id="upgradeList"></div>
+  <script src="main.js"></script>
+</body>
+</html> 

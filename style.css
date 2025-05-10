@@ -1,0 +1,404 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Cinzel:wght@700&display=swap');
+
+body {
+  margin: 0;
+  background: #10131a;
+  overflow: hidden;
+  font-family: 'Montserrat', Arial, sans-serif;
+  position: relative;
+  cursor: url('images/cursor.png') 16 16, auto;
+}
+body::before {
+  content: '';
+  position: fixed;
+  left: 0; top: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  z-index: 1000;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(16,19,26,0.95) 100%);
+}
+
+canvas {
+  display: block;
+  margin: 0;
+  background: #10131a;
+  width: 100vw;
+  height: 100vh;
+  font-family: 'Montserrat', Arial, sans-serif;
+  box-shadow: 0 0 80px 10px #000 inset;
+}
+
+#hud {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #ffb347;
+  font-size: 14px;
+  z-index: 10;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 400;
+  text-shadow: 2px 2px 0 #000, 0 0 8px #ff7e2d;
+}
+
+#upgradeModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(16,19,26,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  font-family: 'Montserrat', Arial, sans-serif;
+}
+#upgradeModal .upgrade-box {
+  background: linear-gradient(to bottom, #23262e 0%, #181a1f 100%);
+  border: 14px solid #3a2a1a;
+  padding: 32px 48px;
+  border-radius: 32px;
+  color: #ffb347;
+  text-align: center;
+  font-family: 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  box-shadow: 0 0 32px 8px #000a, 0 -8px 32px 0 #b35c1e88;
+  position: relative;
+}
+#upgradeModal .upgrade-box::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; right: 0; height: 24px;
+  background: linear-gradient(to bottom, #b35c1e 0%, transparent 100%);
+  opacity: 0.35;
+  border-top-left-radius: 32px;
+  border-top-right-radius: 32px;
+  pointer-events: none;
+}
+#upgradeModal button {
+  margin: 12px;
+  padding: 12px 24px;
+  font-size: 18px;
+  background: #23262e;
+  color: #ffb347;
+  border: 8px solid #3a2a1a;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  font-family: 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  box-shadow: 0 2px 8px #000a;
+}
+#upgradeModal button:hover {
+  background: linear-gradient(to bottom, #b35c1e 0%, #23262e 100%);
+  border-color: #ffb347;
+  color: #fff;
+  transform: scale(1.07);
+  box-shadow: 0 0 24px 4px #b35c1e88, 0 2px 8px #000a;
+  text-shadow: 1px 1px 2px #000, 0 0 4px #23262e;
+}
+
+.upgrade-options {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  margin-top: 16px;
+}
+.upgrade-btn {
+  background: #23262e;
+  border: 2.5px solid #3a2a1a;
+  color: #ffb347;
+  border-radius: 10px;
+  padding: 24px 16px;
+  font-size: 18px;
+  min-width: 180px;
+  max-width: 210px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: 0 4px 16px #000a, 0 0 0 4px #000 inset;
+  outline: none;
+  font-family: 'Montserrat', Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  word-break: break-word;
+  white-space: normal;
+  width: 210px;
+  min-height: 220px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+}
+.upgrade-btn strong {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 1.1em;
+  color: #ffb347;
+  text-align: center;
+  word-break: break-word;
+  white-space: normal;
+  text-shadow: none;
+  font-weight: bold;
+}
+.upgrade-btn span {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.92em;
+  text-align: center;
+  word-break: break-word;
+  white-space: normal;
+}
+.upgrade-btn.hover, .upgrade-btn:hover {
+  background: linear-gradient(to bottom, #b35c1e 0%, #23262e 100%);
+  border-color: #ffb347;
+  color: #fff;
+  transform: scale(1.07);
+  box-shadow: 0 0 24px 4px #b35c1e88, 0 2px 8px #000a;
+  text-shadow: 1px 1px 2px #000, 0 0 4px #23262e;
+}
+.upgrade-box h2 {
+  margin-bottom: 8px;
+  color: #ffb347;
+  font-family: 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  font-size: 2.2em;
+  text-shadow: none;
+}
+.upgrade-box p {
+  margin-bottom: 12px;
+  color: #ffb347;
+  font-size: 1.1em;
+}
+
+#stats {
+  margin-top: 10px;
+  color: #ffb347;
+  font-size: 13px;
+  background: rgba(35,38,46,0.28);
+  padding: 6px 12px;
+  border-radius: 8px;
+  max-width: 260px;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 400;
+  border: 1.5px solid #3a2a1a;
+  box-shadow: 0 2px 8px #000a;
+}
+#stats div {
+  margin-bottom: 2px;
+}
+
+#upgradeList {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: rgba(35,38,46,0.92);
+  color: #ffb347;
+  font-size: 15px;
+  padding: 16px 20px;
+  border-radius: 10px;
+  z-index: 20;
+  min-width: unset;
+  max-width: 90vw;
+  box-shadow: 0 4px 16px #000a, 0 0 0 4px #3a2a1a inset;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 400;
+  border: 2px solid #3a2a1a;
+}
+#upgradeList h3 {
+  margin: 0 0 10px 0;
+  color: #ffb347;
+  font-size: 18px;
+  text-align: center;
+  font-family: 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  text-shadow: 1px 1px 0 #000, 0 0 6px #b35c1e;
+}
+#upgradeList ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 18px;
+  justify-content: center;
+}
+#upgradeList li {
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(35,38,46,0.7);
+  border-radius: 8px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 8px #000a;
+  border: 1.5px solid #3a2a1a;
+}
+#upgradeList .icon {
+  position: relative;
+  cursor: pointer;
+}
+#upgradeList .upgrade-tooltip {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: 120%;
+  transform: translateX(-50%);
+  background: rgba(35,38,46,0.97);
+  color: #ffb347;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px #000a;
+  white-space: nowrap;
+  z-index: 100;
+  font-size: 15px;
+  min-width: 160px;
+  text-align: center;
+  pointer-events: none;
+  border: 1.5px solid #3a2a1a;
+}
+#upgradeList .icon:hover .upgrade-tooltip,
+#upgradeList .icon:focus .upgrade-tooltip {
+  display: block;
+}
+#upgradeList .upgrade-tooltip strong {
+  color: #ffb347;
+  font-size: 1.1em;
+  margin-bottom: 2px;
+  display: block;
+  text-shadow: 1px 1px 0 #000, 0 0 6px #b35c1e;
+}
+#upgradeList .upgrade-tooltip span {
+  color: #ffb347;
+  font-size: 0.98em;
+}
+#upgradeList .upgrade-li {
+  /* Hide text except icon and level */
+}
+#upgradeList .level {
+  color: #ffb347;
+  font-weight: bold;
+  margin-left: 0;
+  text-shadow: 1px 1px 0 #000, 0 0 6px #b35c1e;
+}
+
+#stage, #timer {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  font-size: 28px;
+  font-family: 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  color: #ffb347;
+  text-shadow: 2px 2px 0 #000, 0 0 8px #b35c1e;
+  text-align: center;
+  pointer-events: none;
+}
+#stage {
+  top: 0px;
+  font-size: 22px;
+  color: #ffb347;
+  letter-spacing: 2px;
+  text-shadow: 1px 1px 0 #000, 0 0 6px #b35c1e;
+}
+
+.upgrade-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 8px auto;
+  background: #23262e;
+  border-radius: 20%;
+  box-shadow: 0 2px 8px rgba(201, 140, 27, 0.932), 0 0 0 3px #ffa51d inset, 0 0 16px 2px #f1951dcb;
+  border: 2px solid #3a2a1a;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.upgrade-icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 0 4px #b35c1e) drop-shadow(0 0 2px #000);
+}
+#upgradeList .icon img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 2px #b35c1e) drop-shadow(0 0 1px #000);
+}
+
+/* Joystick styles */
+#joystick-container {
+  position: fixed;
+  left: 32px;
+  bottom: 32px;
+  width: 120px;
+  height: 120px;
+  z-index: 100;
+  touch-action: none;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+#joystick-base {
+  width: 100px;
+  height: 100px;
+  background: rgba(62,39,35,0.25);
+  border: 2.5px solid #6e4b27;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#joystick-knob {
+  width: 48px;
+  height: 48px;
+  background: rgba(176,139,79,0.85);
+  border: 2.5px solid #8d6748;
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 8px #0006;
+  transition: background 0.15s;
+  touch-action: none;
+}
+@media (max-width: 700px) {
+  #joystick-container {
+    left: 10px;
+    bottom: 10px;
+    width: 90px;
+    height: 90px;
+  }
+  #joystick-base {
+    width: 70px;
+    height: 70px;
+  }
+  #joystick-knob {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+/* Large/game/heading texts: use Cinzel */
+#stage, #timer,
+#upgradeModal .upgrade-box h2,
+#upgradeModal button,
+.upgrade-btn,
+#upgradeList h3 {
+  font-family: 'Cinzel', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif !important;
+  letter-spacing: 0.06em;
+}
+
+/* Small texts: use Montserrat */
+#hud, #stats, #upgradeList, #upgradeModal, #upgradeModal .upgrade-box, #upgradeModal .upgrade-box p, #upgradeList li, #upgradeList .level, #upgradeList .upgrade-tooltip, #stats div {
+  font-family: 'Montserrat', Arial, sans-serif !important;
+  font-weight: 400;
+} 
