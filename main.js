@@ -57,7 +57,7 @@ let xpToNext = 10; // Cumulative XP required for next level
 let totalXP = 0; // Track total XP collected
 let projectileDamage = 10; //start = 10dmg
 let critChance = 0;
-let hpRegen = 5;
+let hpRegen = 0;
 let upgradePending = false;
 let maxHp = 100;
 let attackInterval = 1000;
@@ -65,7 +65,7 @@ let projectileRadius = 5;
 let invincibleTime = 0;
 let lastHitTime = 0;
 let invincibleDuration = 0;
-let additionalProjectiles = 3; //start = 0
+let additionalProjectiles = 0; //start = 0
 let magnetRange = 50;
 let freezeDuration = 0;
 let lifesteal = 0;
@@ -87,14 +87,17 @@ let upgradeLevels = {};
 // Add global array for floating damage numbers
 let floatingDamageNumbers = [];
 
+// Add global array for floating player damage numbers
+let floatingPlayerDamageNumbers = [];
+
 // Enemy types
 const ENEMY_TYPES = [
-  { name: 'Basic', color: 'red', speed: () => 1.0 + Math.random() * 0.5, radius: 15, hp: 20, xp: 10 },
-  { name: 'Fast', color: 'yellow', speed: () => 1.8 + Math.random() * 0.5, radius: 10, hp: 10, xp: 7 },
-  { name: 'Tank', color: 'blue', speed: () => 0.7 + Math.random() * 0.2, radius: 22, hp: 60, xp: 25 },
-  { name: 'Burning', color: 'orange', speed: () => 1.2 + Math.random() * 0.3, radius: 14, hp: 18, xp: 12 },
-  { name: 'Range', color: 'lime', speed: () => 1.0 + Math.random() * 0.3, radius: 13, hp: 16, xp: 14 },
-  { name: 'Final Boss', color: 'purple', speed: () => 0.7, radius: 60, hp: 800, xp: 100 }
+  { name: 'Basic', color: 'red', speed: () => 1.0 + Math.random() * 0.5, radius: 15, hp: 20, xp: 10, damage: 10 },
+  { name: 'Fast', color: 'yellow', speed: () => 1.8 + Math.random() * 0.5, radius: 14, hp: 10, xp: 7, damage: 7 },
+  { name: 'Tank', color: 'blue', speed: () => 0.7 + Math.random() * 0.2, radius: 22, hp: 60, xp: 25, damage: 18 },
+  { name: 'Burning', color: 'orange', speed: () => 1.2 + Math.random() * 0.3, radius: 14, hp: 18, xp: 12, damage: 12 },
+  { name: 'Range', color: 'lime', speed: () => 1.0 + Math.random() * 0.3, radius: 13, hp: 16, xp: 14, damage: 8 },
+  { name: 'Final Boss', color: 'purple', speed: () => 0.7, radius: 60, hp: 800, xp: 100, damage: 30 }
 ];
 
 // Stage logic
@@ -127,16 +130,18 @@ class XPOrb {
   constructor(x, y, value = 10) {
     this.x = x;
     this.y = y;
-    this.radius = 8;
     this.value = value;
     this.collected = false;
-    // Color by value
+    // Size and color by value (brown/gold style)
     if (value <= 10) {
-      this.color = '#00e0ff'; // blue
+      this.radius = 6;
+      this.color = '#cd7f32'; // bronze
     } else if (value < 20) {
-      this.color = '#00ff90'; // greenish for mid XP
+      this.radius = 8;
+      this.color = '#c0c0c0'; // silver
     } else {
-      this.color = '#ffe066'; // yellow for high XP
+      this.radius = 10;
+      this.color = '#ffd700'; // gold
     }
     this.vx = 0;
     this.vy = 0;
@@ -169,13 +174,15 @@ class XPOrb {
   draw(ctx) {
     ctx.save();
     ctx.globalAlpha = 0.85;
+    ctx.shadowColor = '#b35c1e'; // gold-brown shadow
+    ctx.shadowBlur = 8;
     ctx.fillStyle = this.color;
     ctx.beginPath();
     ctx.arc(this.x - camera.x, this.y - camera.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
+    // ctx.strokeStyle = '#fff';
+    // ctx.lineWidth = 2;
+    // ctx.stroke();
     ctx.restore();
   }
 }
@@ -471,7 +478,7 @@ class Enemy {
     const hpPercent = Math.max(0, this.hp / this.maxHp);
     ctx.fillStyle = hpPercent > 0.5 ? '#4caf50' : (hpPercent > 0.2 ? '#ffc107' : '#f44336');
     ctx.fillRect(barX, barY, barWidth * hpPercent, barHeight);
-    ctx.strokeStyle = '#fff';
+    ctx.strokeStyle = 'rgba(78,46,14,0.0)'; // dark brown, semi-transparent
     ctx.lineWidth = 1.5;
     ctx.strokeRect(barX, barY, barWidth, barHeight);
     ctx.restore();
@@ -612,6 +619,17 @@ function handleCollisions() {
               const d2 = Math.hypot(other.x - e.x, other.y - e.y);
               if (d2 < areaDamageRadius) {
                 other.hp -= areaDamageValue;
+                if (other.hp <= 0) {
+                  // Transfer remaining damage numbers to global array
+                  other.damageNumbers.forEach(d => {
+                    floatingDamageNumbers.push({ ...d, x: other.x, y: other.y, created: Date.now() });
+                  });
+                  // Drop XP orb
+                  let xpValue = other.type && other.type.xp ? other.type.xp : 10;
+                  pickups.push(new XPOrb(other.x, other.y, xpValue));
+                  // Remove enemy
+                  enemies.splice(k, 1);
+                }
               }
             }
           }
@@ -686,13 +704,15 @@ function handleCollisions() {
     const dist = Math.hypot(player.x - e.x, player.y - e.y);
     if (dist < player.radius + e.radius) {
       if (invincibleTime > Date.now()) continue;
-      let dmg = 10;
+      let dmg = e.type.damage || 10;
       if (shield > 0) {
         let absorb = Math.min(shield, dmg);
         shield -= absorb;
         dmg -= absorb;
       }
       player.hp -= dmg;
+      // Show floating damage above player
+      floatingPlayerDamageNumbers.push({ value: dmg, time: Date.now() });
       lastHitTime = Date.now();
       if (invincibleDuration > 0) {
         invincibleTime = Date.now() + invincibleDuration * 1000;
@@ -746,9 +766,13 @@ function update() {
   }
   player.update();
   enemies.forEach(e => e.update(player));
-  // Update camera to follow player, clamp to world
-  camera.x = Math.max(0, Math.min(worldWidth - canvas.width, player.x - canvas.width / 2));
-  camera.y = Math.max(0, Math.min(worldHeight - canvas.height, player.y - canvas.height / 2));
+  // Update camera to follow player, clamp to world (account for scale)
+  let scale = 1;
+  if (window.innerWidth <= 1600) {
+    scale = 0.7;
+  }
+  camera.x = Math.max(0, Math.min(worldWidth - canvas.width / scale, player.x - (canvas.width / scale) / 2));
+  camera.y = Math.max(0, Math.min(worldHeight - canvas.height / scale, player.y - (canvas.height / scale) / 2));
   // Update boss/range projectiles
   for (let i = bossProjectiles.length - 1; i >= 0; i--) {
     const p = bossProjectiles[i];
@@ -763,6 +787,8 @@ function update() {
         dmg -= absorb;
       }
       player.hp -= dmg;
+      // Show floating damage above player for projectiles
+      floatingPlayerDamageNumbers.push({ value: dmg, time: Date.now() });
       if (invincibleDuration > 0) {
         invincibleTime = Date.now() + invincibleDuration * 1000;
       }
@@ -808,25 +834,35 @@ const bgTile = new Image();
 bgTile.src = 'images/back/tile1.jpg';
 
 function render() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear first!
+  // Mobile scaling
+  let scale = 1;
+  if (window.innerWidth <= 1600) {
+    scale = 0.7;
+  }
+  ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset any previous transforms
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.scale(scale, scale);
   // Draw tiled background, offset by camera
   if (bgTile.complete) {
     const pattern = ctx.createPattern(bgTile, 'repeat');
     ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.globalAlpha = 1;
     ctx.translate(-camera.x % bgTile.width, -camera.y % bgTile.height);
     ctx.fillStyle = pattern;
-    ctx.fillRect(camera.x % bgTile.width, camera.y % bgTile.height, canvas.width + bgTile.width, canvas.height + bgTile.height);
+    // Draw tiles at half size for more frequency
+    ctx.scale(0.5, 0.5);
+    ctx.fillRect((camera.x % bgTile.width) * 2, (camera.y % bgTile.height) * 2, (canvas.width / scale + bgTile.width) * 2, (canvas.height / scale + bgTile.height) * 2);
     ctx.restore();
   } else {
     ctx.fillStyle = '#222';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
   }
   // Draw world border
   ctx.save();
-  ctx.strokeStyle = '#ffd700';
-  ctx.lineWidth = 4;
+  ctx.strokeStyle = '#4e2e0e';
+  ctx.lineWidth = 40;
   ctx.strokeRect(-camera.x, -camera.y, worldWidth, worldHeight);
   ctx.restore();
 
@@ -891,18 +927,35 @@ function render() {
   // Draw XP orbs
   pickups.forEach(orb => orb.draw(ctx));
   if (gameOver) {
-    ctx.fillStyle = 'white';
-    ctx.font = '32px monospace';
+    // Game Over overlay styled like pause, but bigger
+    ctx.save();
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = '#4a0707'; // bloody dark red
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#ffb347'; // Match #stage color
+    ctx.font = "64px 'Cinzel', 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif";
     ctx.textAlign = 'center';
+    ctx.textShadow = '2px 2px 0 #000, 0 0 8px #b35c1e';
     ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+    ctx.restore();
   }
   if (win) {
-    ctx.fillStyle = '#ffd700';
-    ctx.font = '40px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('YOU WIN!', canvas.width / 2, canvas.height / 2 - 40);
-    ctx.font = '24px monospace';
-    ctx.fillText('Congratulations!', canvas.width / 2, canvas.height / 2);
+    // Show win image instead of text
+    const winImg = new window.Image();
+    winImg.src = 'images/win.png';
+    // If image is loaded, draw it centered
+    if (winImg.complete) {
+      const imgWidth = 500;
+      const imgHeight = 500;
+      ctx.drawImage(winImg, (canvas.width - imgWidth) / 2, (canvas.height - imgHeight) / 2, imgWidth, imgHeight);
+    } else {
+      winImg.onload = function() {
+        const imgWidth = 500;
+        const imgHeight = 500;
+        ctx.drawImage(winImg, (canvas.width - imgWidth) / 2, (canvas.height - imgHeight) / 2, imgWidth, imgHeight);
+      };
+    }
   }
   // Draw boss debug info
   if (finalBossActive && boss) {
@@ -930,6 +983,18 @@ function render() {
     ctx.fillText(Math.round(d.value), d.x - camera.x, d.y - 30 - (Date.now() - d.created) / 20 - camera.y);
     ctx.restore();
   });
+  // Draw floating damage numbers above player
+  floatingPlayerDamageNumbers = floatingPlayerDamageNumbers.filter(d => Date.now() - d.time < 700);
+  floatingPlayerDamageNumbers.forEach(d => {
+    ctx.save();
+    ctx.globalAlpha = 1 - (Date.now() - d.time) / 700;
+    ctx.fillStyle = '#ffd700';
+    ctx.font = 'bold 18px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(Math.round(d.value), player.x - camera.x, player.y - player.radius - 20 - (Date.now() - d.time) / 20 - camera.y);
+    ctx.restore();
+  });
+  ctx.restore();
 }
 
 function gameLoop() {

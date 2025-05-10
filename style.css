@@ -169,14 +169,12 @@ canvas {
   margin-top: 10px;
   color: #ffb347;
   font-size: 13px;
-  background: rgba(35,38,46,0.28);
   padding: 6px 12px;
   border-radius: 8px;
   max-width: 260px;
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 400;
-  border: 1.5px solid #3a2a1a;
-  box-shadow: 0 2px 8px #000a;
+ 
 }
 #stats div {
   margin-bottom: 2px;
@@ -185,9 +183,9 @@ canvas {
 #upgradeList {
   position: fixed;
   left: 50%;
-  bottom: 24px;
+  bottom: 8px;
   transform: translateX(-50%);
-  background: rgba(35,38,46,0.92);
+  background: rgba(35,38,46,0.0);
   color: #ffb347;
   font-size: 15px;
   padding: 16px 20px;
@@ -195,13 +193,13 @@ canvas {
   z-index: 20;
   min-width: unset;
   max-width: 90vw;
-  box-shadow: 0 4px 16px #000a, 0 0 0 4px #3a2a1a inset;
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   align-items: center;
   font-family: 'Montserrat', Arial, sans-serif;
   font-weight: 400;
-  border: 2px solid #3a2a1a;
+  border: 0px solid #3a2a1a;
 }
 #upgradeList h3 {
   margin: 0 0 10px 0;
@@ -217,7 +215,7 @@ canvas {
   margin: 0;
   display: flex;
   flex-direction: row;
-  gap: 18px;
+  gap: 10px;
   justify-content: center;
 }
 #upgradeList li {
@@ -225,11 +223,11 @@ canvas {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(35,38,46,0.7);
+  background: rgba(35,38,46,0.3);
   border-radius: 8px;
   padding: 6px 12px;
   box-shadow: 0 2px 8px #000a;
-  border: 1.5px solid #3a2a1a;
+  border: 1.5px solid rgba(58, 42, 26, 0.5);
 }
 #upgradeList .icon {
   position: relative;
@@ -333,8 +331,8 @@ canvas {
 /* Joystick styles */
 #joystick-container {
   position: fixed;
-  left: 32px;
-  bottom: 32px;
+  left: 64px;
+  bottom: 64px;
   width: 120px;
   height: 120px;
   z-index: 100;
@@ -372,8 +370,8 @@ canvas {
 }
 @media (max-width: 700px) {
   #joystick-container {
-    left: 10px;
-    bottom: 10px;
+    left: 30px;
+    bottom: 30px;
     width: 90px;
     height: 90px;
   }
@@ -384,6 +382,10 @@ canvas {
   #joystick-knob {
     width: 32px;
     height: 32px;
+  }
+  #upgradeModal .upgrade-box {
+    transform: scale(0.45);
+    transform-origin: top center;
   }
 }
 
