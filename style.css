@@ -591,4 +591,36 @@ canvas {
 #howToPlayModal button:hover {
   background: #ffb347;
   color: #23262e;
-} 
+}
+
+#storyBtn {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: none;
+  outline: none;
+  cursor: pointer;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#storyBtn img {
+  width: 120px;
+  height: auto;
+  transition: filter 0.18s, transform 0.12s;
+  display: block;
+}
+#storyBtn:hover img {
+  filter: brightness(1.2) drop-shadow(0 0 8px #ffe066);
+  transform: scale(1.04);
+}
+#storyBtn:active img {
+  filter: brightness(0.85) drop-shadow(0 0 8px #b35c1e);
+  transform: scale(0.98);
+}
+#startMenu { position: relative; } 

@@ -97,7 +97,8 @@ const ENEMY_TYPES = [
   { name: 'Burning', color: 'orange', speed: () => 1.2 + Math.random() * 0.3, radius: 18, hp: 18, xp: 12, damage: 12 },
   { name: 'Range', color: 'lime', speed: () => 1.0 + Math.random() * 0.3, radius: 13, hp: 16, xp: 14, damage: 8 },
   { name: 'Boss', color: 'brown', speed: () => 0.9, radius: 40, hp: 300, xp: 50, damage: 20 }, // Regular Boss
-  { name: 'Final Boss', color: 'purple', speed: () => 0.7, radius: 60, hp: 800, xp: 100, damage: 30 }
+  { name: 'Final Boss', color: 'purple', speed: () => 0.7, radius: 60, hp: 800, xp: 100, damage: 30 },
+  { name: 'Summoner', color: 'magenta', speed: () => 0.8 + Math.random() * 0.2, radius: 20, hp: 40, xp: 30, damage: 5 }
 ];
 
 // Stage logic
@@ -152,12 +153,12 @@ class XPOrb {
     // Size and color by value (brown/gold style)
     if (value <= 10) {
       this.radius = 6;
-      this.color = '#cd7f32'; // bronze
+      this.color = '#ffd700'; // bronze
     } else if (value < 20) {
-      this.radius = 8;
-      this.color = '#c0c0c0'; // silver
+      this.radius = 7;
+      this.color = '#ffd700'; // silver
     } else {
-      this.radius = 10;
+      this.radius = 8;
       this.color = '#ffd700'; // gold
     }
     this.vx = 0;
@@ -428,6 +429,10 @@ class Enemy {
     this.damageNumbers = [];
     this.shootCooldown = 0;
     this.lastBurnNumberTime = 0; // Throttle burn damage numbers
+    // Summoner logic
+    if (this.type.name === 'Summoner') {
+      this.summonCooldown = 240; // 4 seconds
+    }
     // Assign image based on type
     const imageMap = {
       'Basic': 'images/enemies/basic.png',
@@ -436,7 +441,8 @@ class Enemy {
       'Burning': 'images/enemies/burning.png',
       'Range': 'images/enemies/range.png',
       'Boss': 'images/enemies/fatpig.png',      // Regular Boss
-      'Final Boss': 'images/enemies/boss_final.png'   // Final Boss
+      'Final Boss': 'images/enemies/boss_final.png',   // Final Boss
+      'Summoner': 'images/enemies/summoner.png'
     };
     this.image = imageMap[this.type.name] || 'images/enemies/basic.png';
   }
@@ -454,6 +460,20 @@ class Enemy {
           radius: 6, color: 'lime', fromBoss: false
         });
         this.shootCooldown = 200;
+      }
+    }
+    // Summoner logic
+    if (this.type.name === 'Summoner') {
+      this.summonCooldown--;
+      if (this.summonCooldown <= 0) {
+        for (let i = 0; i < 7; i++) {
+          let angle = Math.random() * Math.PI * 2;
+          let dist = this.radius + 40 + Math.random() * 30;
+          let x = this.x + Math.cos(angle) * dist;
+          let y = this.y + Math.sin(angle) * dist;
+          enemies.push(new Enemy(x, y, ENEMY_TYPES[1])); // Fast enemy
+        }
+        this.summonCooldown = 480; // 8 seconds after summoning
       }
     }
     const dx = player.x - this.x;
@@ -567,11 +587,17 @@ class Projectile {
 
   draw(ctx) {
     ctx.save();
-    ctx.font = `${this.radius * 2.2}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.globalAlpha = 1;
-    ctx.fillText('🔥', this.x - camera.x, this.y - camera.y);
+    // Calculate angle of movement
+    const angle = Math.atan2(this.vy, this.vx);
+    ctx.translate(this.x - camera.x, this.y - camera.y);
+    ctx.rotate(angle);
+    // Orange glow for player projectiles
+    ctx.shadowColor = '#ff9800';
+    ctx.shadowBlur = 32;
+    const img = new window.Image();
+    img.src = 'images/enemies/e_fireball.png';
+    const size = this.radius * 3.2;
+    ctx.drawImage(img, -size/2, -size/2, size, size);
     ctx.restore();
   }
 }
@@ -595,6 +621,8 @@ function spawnEnemies() {
   const pool = getStageEnemyTypes();
   let burst = Math.random() < 0.1;
   let num = burst ? (8 + Math.floor(Math.random() * 5)) : (2 + Math.floor(Math.random() * 6));
+  // Increase by +20% per stage
+  num = Math.round(num * Math.pow(1.2, stage));
   for (let i = 0; i < num; i++) {
     let edge = Math.floor(Math.random() * 4);
     let x, y;
@@ -791,6 +819,8 @@ function update() {
     bossProjectiles.length = 0;
     finalBossActive = true;
     boss = new Enemy(worldWidth / 2, worldHeight / 2, ENEMY_TYPES[6]);
+    boss.hp = 5000; // Custom health for final boss
+    boss.maxHp = 5000;
     boss.shootCooldown = 60;
     // Change boss image after 10th minute
     boss.image = 'images/enemies/boss_final2.png';
@@ -969,10 +999,17 @@ function render() {
   bossProjectiles.forEach(p => {
     ctx.save();
     ctx.globalAlpha = 0.9;
-    ctx.font = `${p.radius * 2.2}px serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('☄️', p.x - camera.x, p.y - camera.y);
+    // Draw as image, rotated to direction
+    const angle = Math.atan2(p.vy, p.vx);
+    ctx.translate(p.x - camera.x, p.y - camera.y);
+    ctx.rotate(angle);
+    // Blue glow for enemy projectiles
+    ctx.shadowColor = '#00b0ff'; // brighter, more saturated blue
+    ctx.shadowBlur = 24;
+    const img = new window.Image();
+    img.src = 'images/enemies/e_arrow.png';
+    const size = p.radius * 5.2;
+    ctx.drawImage(img, -size/2, -size/2, size, size);
     ctx.restore();
   });
   player.draw(ctx);
@@ -1075,7 +1112,7 @@ function gameLoop() {
     ctx.fillStyle = '#ffb347'; // Match #stage color
     ctx.font = "32px 'Cinzel', 'UnifrakturCook', 'Luckiest Guy', 'Comic Sans MS', 'Comic Sans', cursive, sans-serif";
     ctx.textAlign = 'center';
-    ctx.fillText(paused ? 'Paused' : 'Level Up!', canvas.width / 2, canvas.height / 2);
+    ctx.fillText(paused ? 'Pause' : 'Level Up!', canvas.width / 2, canvas.height / 2);
     ctx.restore();
   }
   if (!gameOver) requestAnimationFrame(gameLoop);
@@ -1286,9 +1323,9 @@ window.addEventListener('DOMContentLoaded', () => {
 function getStageEnemyTypes() {
   if (finalBossActive) return [ENEMY_TYPES[6]]; // Only Final Boss
   if (stage === 0) return [ENEMY_TYPES[0], ENEMY_TYPES[2]]; // Basic, Fast
-  if (stage === 1) return [ENEMY_TYPES[0], ENEMY_TYPES[1], ENEMY_TYPES[2]]; // Basic, Fast, Tank
+  if (stage === 1) return [ENEMY_TYPES[0], ENEMY_TYPES[1], ENEMY_TYPES[2]]; // Basic, Fast, Tank, Summoner
   if (stage === 2) return [ENEMY_TYPES[0], ENEMY_TYPES[2], ENEMY_TYPES[3]]; // Basic, Tank, Burning
-  if (stage === 3) return [ENEMY_TYPES[0], ENEMY_TYPES[2], ENEMY_TYPES[4]]; // Basic, Tank, Range
+  if (stage === 3) return [ENEMY_TYPES[0], ENEMY_TYPES[2], ENEMY_TYPES[4], ENEMY_TYPES[7]]; // Basic, Tank, Range
   if (stage === 4) return [ENEMY_TYPES[1], ENEMY_TYPES[2], ENEMY_TYPES[3], ENEMY_TYPES[4], ENEMY_TYPES[5]]; // Fast, Tank, Burning, Range
   return [ENEMY_TYPES[0], ENEMY_TYPES[1]];
 }
@@ -1372,7 +1409,7 @@ howToPlayModal.innerHTML = `
   <div style="background: #23262e; border: 10px solid #3a2a1a; border-radius: 28px; color: #ffb347; padding: 36px 48px; max-width: 420px; text-align: center; font-family: 'Luckiest Guy', 'Comic Sans MS', cursive; box-shadow: 0 0 32px 8px #000a; position: relative;">
     <h2 style='font-family: Cinzel, serif; color: #ffe066; margin-bottom: 18px;'>How to Play</h2>
     <ul style='text-align:left; color: #ffe066; font-family: Montserrat, Arial, sans-serif; font-size: 1.1em; margin-bottom: 18px;'>
-      <li>Move: <b>WASD</b> or <b>Arrow Keys</b> or click and move <b>Mouse</b> or connected <b>gamepad</b> (mobile friendly)</li>
+      <li>Move: <b>WASD</b> or <b>Arrow Keys</b> or click and move <b>Mouse</b> or connect <b>Gamepad</b> (mobile with stick or touch)</li>
       <li>Survive as long as you can in the dungeon</li>
       <li>Defeat enemies to gain XP and level up</li>
       <li>Choose upgrades to grow stronger</li>
@@ -1420,3 +1457,39 @@ if (isTouchDevice()) {
     window.removeEventListener('touchmove', updateTouchTarget);
   });
 }
+
+const storyBtn = document.getElementById('storyBtn');
+
+// Create Story modal
+const storyModal = document.createElement('div');
+storyModal.id = 'storyModal';
+storyModal.style.display = 'none';
+storyModal.style.position = 'fixed';
+storyModal.style.top = '0';
+storyModal.style.left = '0';
+storyModal.style.width = '100vw';
+storyModal.style.height = '100vh';
+storyModal.style.background = 'rgba(16,19,26,0.92)';
+storyModal.style.zIndex = '11000';
+storyModal.style.alignItems = 'center';
+storyModal.style.justifyContent = 'center';
+storyModal.innerHTML = `
+  <div style="background: #23262e; border: 10px solid #3a2a1a; border-radius: 28px; color: #ffb347; padding: 36px 48px; max-width: 520px; text-align: center; font-family: 'Luckiest Guy', 'Comic Sans MS', cursive; box-shadow: 0 0 32px 8px #000a; position: relative;">
+    <h2 style='font-family: Cinzel, serif; color: #ffe066; margin-bottom: 18px;'>Eldergloom Abyss</h2>
+    <p style='color: #ffe066; font-family: Montserrat, Arial, sans-serif; font-size: 1.15em; margin-bottom: 18px; white-space: pre-line;'>
+      You came for gold.\nYou heard the whispers. The Eldergloom Abyss, a dungeon buried beneath sanity, swollen with cursed treasure and slumbering horrors.\n\nEach step down draws you closer to madness...\n...and to riches no sane thief should touch.\n\nWill you escape with riches, or be devoured by the dungeon itself?
+    </p>
+    <button id='closeStoryBtn' style='margin-top: 12px; font-size: 1.1em; background: #b35c1e; color: #fff; border: none; border-radius: 12px; padding: 10px 32px; cursor: pointer; font-family: Cinzel, serif;'>Close</button>
+  </div>
+`;
+document.body.appendChild(storyModal);
+
+storyBtn.addEventListener('click', () => {
+  storyModal.style.display = 'flex';
+});
+document.getElementById('closeStoryBtn')?.addEventListener('click', () => {
+  storyModal.style.display = 'none';
+});
+storyModal.addEventListener('click', (e) => {
+  if (e.target === storyModal) storyModal.style.display = 'none';
+});
