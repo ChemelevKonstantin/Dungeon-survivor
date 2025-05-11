@@ -871,6 +871,20 @@ function render() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.scale(scale, scale);
+
+  // Draw dark overlay everywhere
+  ctx.save();
+  ctx.globalAlpha = 0.92;
+  ctx.fillStyle = '#18120a';
+  ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
+  ctx.restore();
+
+  // Mask for playable area
+  ctx.save();
+  ctx.beginPath();
+  ctx.rect(-camera.x, -camera.y, worldWidth, worldHeight);
+  ctx.clip();
+
   // Draw tiled background, offset by camera
   if (bgTile.complete) {
     const pattern = ctx.createPattern(bgTile, 'repeat');
@@ -887,10 +901,11 @@ function render() {
     ctx.fillStyle = '#222';
     ctx.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
   }
+
   // Draw world border
   ctx.save();
-  ctx.strokeStyle = '#4e2e0e';
-  ctx.lineWidth = 40;
+  ctx.strokeStyle = '#070401';
+  ctx.lineWidth = 10;
   ctx.strokeRect(-camera.x, -camera.y, worldWidth, worldHeight);
   ctx.restore();
 
