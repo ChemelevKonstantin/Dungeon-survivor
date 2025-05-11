@@ -540,4 +540,54 @@ canvas {
 #startMenuButtons button:active img {
   filter: brightness(0.85) drop-shadow(0 0 8px #b35c1e);
   transform: scale(0.98);
+}
+
+#howToPlayModal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(16,19,26,0.92);
+  z-index: 11000;
+  align-items: center;
+  justify-content: center;
+}
+#howToPlayModal > div {
+  background: #23262e;
+  border: 10px solid #3a2a1a;
+  border-radius: 28px;
+  color: #ffb347;
+  padding: 36px 48px;
+  max-width: 420px;
+  text-align: center;
+  font-family: 'Luckiest Guy', 'Comic Sans MS', cursive;
+  box-shadow: 0 0 32px 8px #000a;
+  position: relative;
+}
+#howToPlayModal h2 {
+  font-family: 'Cinzel', serif;
+  color: #ffe066;
+  margin-bottom: 18px;
+}
+#howToPlayModal ul {
+  text-align: left;
+  color: #ffe066;
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-size: 1.1em;
+  margin-bottom: 18px;
+}
+#howToPlayModal button {
+  margin-top: 12px;
+  font-size: 1.1em;
+  background: #b35c1e;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 32px;
+  cursor: pointer;
+  font-family: 'Cinzel', serif;
+  transition: background 0.18s, color 0.18s;
+}
+#howToPlayModal button:hover {
+  background: #ffb347;
+  color: #23262e;
 } 

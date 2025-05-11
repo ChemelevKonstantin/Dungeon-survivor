@@ -94,7 +94,7 @@ const ENEMY_TYPES = [
   { name: 'Basic', color: 'red', speed: () => 1.0 + Math.random() * 0.5, radius: 15, hp: 20, xp: 10, damage: 10 },
   { name: 'Fast', color: 'yellow', speed: () => 1.8 + Math.random() * 0.5, radius: 14, hp: 10, xp: 7, damage: 7 },
   { name: 'Tank', color: 'blue', speed: () => 0.7 + Math.random() * 0.2, radius: 22, hp: 60, xp: 25, damage: 18 },
-  { name: 'Burning', color: 'orange', speed: () => 1.2 + Math.random() * 0.3, radius: 14, hp: 18, xp: 12, damage: 12 },
+  { name: 'Burning', color: 'orange', speed: () => 1.2 + Math.random() * 0.3, radius: 18, hp: 18, xp: 12, damage: 12 },
   { name: 'Range', color: 'lime', speed: () => 1.0 + Math.random() * 0.3, radius: 13, hp: 16, xp: 14, damage: 8 },
   { name: 'Boss', color: 'brown', speed: () => 0.9, radius: 40, hp: 300, xp: 50, damage: 20 }, // Regular Boss
   { name: 'Final Boss', color: 'purple', speed: () => 0.7, radius: 60, hp: 800, xp: 100, damage: 30 }
@@ -790,8 +790,10 @@ function update() {
     enemies.length = 0;
     bossProjectiles.length = 0;
     finalBossActive = true;
-    boss = new Enemy(worldWidth / 2, worldHeight / 2, ENEMY_TYPES[5]);
+    boss = new Enemy(worldWidth / 2, worldHeight / 2, ENEMY_TYPES[6]);
     boss.shootCooldown = 60;
+    // Change boss image after 10th minute
+    boss.image = 'images/enemies/boss_final2.png';
     enemies.push(boss);
     bossHasSpawned = true;
   }
@@ -1341,4 +1343,72 @@ function checkLevelUp() {
     showUpgradeModal();
     updateHUD();
   }
+}
+
+const howToPlayBtn = document.getElementById('howToPlayBtn');
+
+// Create How to Play modal
+const howToPlayModal = document.createElement('div');
+howToPlayModal.id = 'howToPlayModal';
+howToPlayModal.style.display = 'none';
+howToPlayModal.style.position = 'fixed';
+howToPlayModal.style.top = '0';
+howToPlayModal.style.left = '0';
+howToPlayModal.style.width = '100vw';
+howToPlayModal.style.height = '100vh';
+howToPlayModal.style.background = 'rgba(16,19,26,0.92)';
+howToPlayModal.style.zIndex = '11000';
+howToPlayModal.style.alignItems = 'center';
+howToPlayModal.style.justifyContent = 'center';
+howToPlayModal.innerHTML = `
+  <div style="background: #23262e; border: 10px solid #3a2a1a; border-radius: 28px; color: #ffb347; padding: 36px 48px; max-width: 420px; text-align: center; font-family: 'Luckiest Guy', 'Comic Sans MS', cursive; box-shadow: 0 0 32px 8px #000a; position: relative;">
+    <h2 style='font-family: Cinzel, serif; color: #ffe066; margin-bottom: 18px;'>How to Play</h2>
+    <ul style='text-align:left; color: #ffe066; font-family: Montserrat, Arial, sans-serif; font-size: 1.1em; margin-bottom: 18px;'>
+      <li>Move: <b>WASD</b> or <b>Arrow Keys</b> or <b>click and move Mouse</b> or connected <b>gamepad</b> (mobile friendly)</li>
+      <li>Survive as long as you can in the dungeon</li>
+      <li>Defeat enemies to gain XP and level up</li>
+      <li>Choose upgrades to grow stronger</li>
+      <li>Defeat the final boss to win!</li>
+      <li>Pause: <b>Spacebar</b></li>
+    </ul>
+    <button id='closeHowToPlayBtn' style='margin-top: 12px; font-size: 1.1em; background: #b35c1e; color: #fff; border: none; border-radius: 12px; padding: 10px 32px; cursor: pointer; font-family: Cinzel, serif;'>Close</button>
+  </div>
+`;
+document.body.appendChild(howToPlayModal);
+
+howToPlayBtn.addEventListener('click', () => {
+  howToPlayModal.style.display = 'flex';
+});
+document.getElementById('closeHowToPlayBtn')?.addEventListener('click', () => {
+  howToPlayModal.style.display = 'none';
+});
+howToPlayModal.addEventListener('click', (e) => {
+  if (e.target === howToPlayModal) howToPlayModal.style.display = 'none';
+});
+
+// Touch-anywhere movement for mobile/touch devices
+if (isTouchDevice()) {
+  canvas.addEventListener('touchstart', function(e) {
+    mouseFollowing = true;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    mouseTarget = {
+      x: (touch.clientX - rect.left) * (canvas.width / rect.width) + camera.x,
+      y: (touch.clientY - rect.top) * (canvas.height / rect.height) + camera.y
+    };
+    window.addEventListener('touchmove', updateTouchTarget, {passive: false});
+  });
+  function updateTouchTarget(e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    mouseTarget = {
+      x: (touch.clientX - rect.left) * (canvas.width / rect.width) + camera.x,
+      y: (touch.clientY - rect.top) * (canvas.height / rect.height) + camera.y
+    };
+  }
+  canvas.addEventListener('touchend', function(e) {
+    mouseFollowing = false;
+    mouseTarget = null;
+    window.removeEventListener('touchmove', updateTouchTarget);
+  });
 }
