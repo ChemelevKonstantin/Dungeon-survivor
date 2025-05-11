@@ -410,10 +410,10 @@ canvas {
   left: 18px;
   top: 50%;
   transform: translateY(-50%);
-  width: 32px;
-  height: 420px;
+  width: 20px;
+  height: 320px;
   background: rgba(35,38,46,0.7);
-  border-radius: 16px;
+  border-radius: 10px;
   box-shadow: 0 2px 12px #000a;
   z-index: 30;
   display: flex;
@@ -423,10 +423,10 @@ canvas {
 }
 #xpBar {
   position: relative;
-  width: 20px;
+  width: 10px;
   height: 90%;
   background: rgba(255,255,255,0.08);
-  border-radius: 10px;
+  border-radius: 5px;
   overflow: hidden;
   display: flex;
   align-items: flex-end;
@@ -440,7 +440,7 @@ canvas {
   left: 0; right: 0; bottom: 0;
   height: var(--xp-bar-fill, 0%);
   background: linear-gradient(to top, #ffb347 0%, #ffe066 100%);
-  border-radius: 10px;
+  border-radius: 5px;
   z-index: 1;
   transition: height 0.3s cubic-bezier(.4,2,.6,1);
 }

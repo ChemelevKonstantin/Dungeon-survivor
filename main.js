@@ -53,7 +53,6 @@ const upgrades = [
   { name: "Armor", effect: "shield", value: 10, desc: "+10 armor (absorbs damage)", icon: "images/upg/upg17.png" }
 ];
 let level = 1;
-let xpToNext = 10; // Cumulative XP required for next level
 let totalXP = 0; // Track total XP collected
 let projectileDamage = 10; //start = 10dmg
 let critChance = 0;
@@ -125,6 +124,23 @@ const environmentObjects = [
   // Add more objects here later
 ];
 
+// XP progression parameters
+const baseXP = 50;
+const xpGrowth = 1.2;
+
+// Returns the cumulative XP required to reach a given level (level 1 = 0 XP)
+function totalXPForLevel(level) {
+  let xp = 0;
+  for (let i = 1; i < level; i++) {
+    xp += Math.floor(baseXP * Math.pow(xpGrowth, i - 1));
+  }
+  return xp;
+}
+// Returns the XP required to go from (level-1) to level
+function xpForLevel(level) {
+  return Math.floor(baseXP * Math.pow(xpGrowth, level - 1));
+}
+
 // XP Orb Class
 class XPOrb {
   constructor(x, y, value = 10) {
@@ -157,6 +173,7 @@ class XPOrb {
       this.collected = true;
       xp += this.value;
       totalXP += this.value;
+      checkLevelUp();
     } else if (attract) {
       // Move toward player
       this.vx = (dx / dist) * 6;
@@ -756,9 +773,10 @@ function update() {
   if (gameOver || upgradePending || win) return;
   // Stage logic
   const elapsed = Math.floor((Date.now() - startTime) / 1000);
-  let newStage = Math.min(Math.floor(elapsed / 60), 5);
+  // Double the time for each stage: 0, 2, 4, 6, 8, 10 minutes
+  let newStage = Math.min(Math.floor(elapsed / 120), 5);
   if (newStage !== stage) stage = newStage;
-  // At 1 min, clear all enemies and spawn Final Boss
+  // At 10 min (stage 5), clear all enemies and spawn Final Boss
   if (stage === 5 && !finalBossActive && !bossHasSpawned) {
     enemies.length = 0;
     bossProjectiles.length = 0;
@@ -831,9 +849,7 @@ function update() {
     spawnEnemies();
   }
   // Level up check
-  if (totalXP >= xpToNext) {
-    showUpgradeModal();
-  }
+  checkLevelUp();
   // Update XP orbs
   pickups.forEach(orb => orb.update(player));
   pickups = pickups.filter(orb => !orb.collected);
@@ -1032,17 +1048,30 @@ function gameLoop() {
 }
 
 function updateHUD() {
+  // Ensure level matches totalXP
+  while (level > 1 && totalXP < totalXPForLevel(level)) {
+    level--;
+  }
+  while (totalXP >= totalXPForLevel(level + 1)) {
+    level++;
+  }
   healthEl.textContent = `HP: ${Math.floor(player.hp)}`;
   shieldEl.textContent = `Shield: ${Math.floor(shield)}/${maxShield} (+${shieldRegen}/sec)`;
-  xpEl.textContent = `XP: ${xp}`;
+  xpEl.textContent = `XP: ${totalXP}`;
   // XP Bar update
   const xpBar = document.getElementById('xpBar');
   const xpBarToNext = document.getElementById('xpBarToNext');
   const xpBarCurrent = document.getElementById('xpBarCurrent');
-  let percent = Math.min(1, totalXP / xpToNext);
-  xpBar.style.setProperty('--xp-bar-fill', (percent * 100) + '%');
-  xpBarToNext.textContent = `${xpToNext} XP`;
-  xpBarCurrent.textContent = `${totalXP} XP`;
+  const xpBarLevel = document.getElementById('xpBarLevel');
+  let xpCurrentLevel = totalXPForLevel(level);
+  let xpNextLevel = totalXPForLevel(level + 1);
+  let xpThisLevel = totalXP - xpCurrentLevel;
+  let xpNeeded = xpNextLevel - xpCurrentLevel;
+  let fill = Math.max(0, Math.min(1, xpThisLevel / xpNeeded));
+  xpBar.style.setProperty('--xp-bar-fill', (fill * 100) + '%');
+  xpBarToNext.textContent = `${xpNeeded} XP`;
+  xpBarCurrent.textContent = `${xpThisLevel} XP`;
+  xpBarLevel.textContent = `Lv ${level}`;
   let elapsed, min, sec;
   if (win) {
     // Freeze timer at win time
@@ -1101,8 +1130,6 @@ function updateHUD() {
     upgradeList.innerHTML = html;
     upgradeList.style.display = '';
   }
-  const xpBarLevel = document.getElementById('xpBarLevel');
-  xpBarLevel.textContent = `Lv ${level}`;
 }
 
 // Auto-attack Mechanic
@@ -1189,7 +1216,6 @@ window.selectUpgrade = function(idx) {
     shield = Math.min(shield + 10, maxShield);
   }
   level++;
-  xpToNext = xpToNext + Math.floor(xpToNext * 1.25);
   upgradeModal.style.display = 'none';
   upgradePending = false;
   updateAutoAttackInterval();
@@ -1207,9 +1233,21 @@ window.addEventListener("keydown", e => {
   keys[e.code] = true;
   if (e.code === 'Space') {
     paused = !paused;
+    // Show or hide stats HUD when paused
+    const hud = document.getElementById('hud');
+    if (paused) {
+      hud.style.display = '';
+    } else {
+      hud.style.display = 'none';
+    }
   }
 });
 window.addEventListener("keyup", e => keys[e.code] = false);
+
+// On load, hide HUD by default
+window.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('hud').style.display = 'none';
+});
 
 function getStageEnemyTypes() {
   if (finalBossActive) return [ENEMY_TYPES[5]]; // Only Final Boss
@@ -1270,3 +1308,13 @@ startGameBtn.addEventListener('click', () => {
 showStartMenu();
 
 init();
+
+// Level up logic: check in update() or wherever XP is gained
+function checkLevelUp() {
+  while (totalXP >= totalXPForLevel(level + 1)) {
+    level++;
+    // Optionally: trigger level up effects, show upgrade modal, etc.
+    showUpgradeModal();
+    updateHUD();
+  }
+}
