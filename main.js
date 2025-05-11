@@ -391,6 +391,22 @@ class Player {
     ctx.shadowBlur = 32;
     ctx.drawImage(img, this.x - camera.x - this.radius, this.y - camera.y - this.radius, size, size);
     ctx.restore();
+
+    // Draw health bar above player (like enemies)
+    const barWidth = this.radius * 2;
+    const barHeight = 8;
+    const barX = this.x - this.radius - camera.x;
+    const barY = this.y - this.radius - 18 - camera.y;
+    ctx.save();
+    ctx.fillStyle = '#333';
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    const hpPercent = Math.max(0, this.hp / maxHp);
+    ctx.fillStyle = hpPercent > 0.5 ? '#4caf50' : (hpPercent > 0.2 ? '#ffc107' : '#f44336');
+    ctx.fillRect(barX, barY, barWidth * hpPercent, barHeight);
+    ctx.strokeStyle = 'rgba(78,46,14,0.0)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(barX, barY, barWidth, barHeight);
+    ctx.restore();
   }
 }
 
