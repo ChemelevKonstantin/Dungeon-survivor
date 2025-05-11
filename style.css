@@ -494,8 +494,7 @@ canvas {
   top: 0; left: 0; right: 0; bottom: 0;
   width: 100vw;
   height: 100vh;
-  /* Black center, strong dark brown vignette on sides */
-  background: radial-gradient(ellipse at center, rgba(0,0,0,0.85) 25%, rgba(40,24,10,0.92) 70%, rgba(20,10,5,1) 100%);
+  background: radial-gradient(ellipse at center, rgba(24,18,10,1) 10%, rgba(0,0,0,0.96) 100%), #18120a;
   z-index: 10000;
   display: flex;
   flex-direction: column;

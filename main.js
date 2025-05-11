@@ -96,6 +96,7 @@ const ENEMY_TYPES = [
   { name: 'Tank', color: 'blue', speed: () => 0.7 + Math.random() * 0.2, radius: 22, hp: 60, xp: 25, damage: 18 },
   { name: 'Burning', color: 'orange', speed: () => 1.2 + Math.random() * 0.3, radius: 14, hp: 18, xp: 12, damage: 12 },
   { name: 'Range', color: 'lime', speed: () => 1.0 + Math.random() * 0.3, radius: 13, hp: 16, xp: 14, damage: 8 },
+  { name: 'Boss', color: 'brown', speed: () => 0.9, radius: 40, hp: 300, xp: 50, damage: 20 }, // Regular Boss
   { name: 'Final Boss', color: 'purple', speed: () => 0.7, radius: 60, hp: 800, xp: 100, damage: 30 }
 ];
 
@@ -434,7 +435,8 @@ class Enemy {
       'Tank': 'images/enemies/tank.png',
       'Burning': 'images/enemies/burning.png',
       'Range': 'images/enemies/range.png',
-      'Final Boss': 'images/enemies/boss.png'
+      'Boss': 'images/enemies/fatpig.png',      // Regular Boss
+      'Final Boss': 'images/enemies/boss_final.png'   // Final Boss
     };
     this.image = imageMap[this.type.name] || 'images/enemies/basic.png';
   }
@@ -527,15 +529,6 @@ class Enemy {
     ctx.lineWidth = 1.5;
     ctx.strokeRect(barX, barY, barWidth, barHeight);
     ctx.restore();
-    if (this.type.name === 'Boss') {
-      ctx.save();
-      ctx.lineWidth = 4;
-      ctx.strokeStyle = '#fff';
-      ctx.beginPath();
-      ctx.arc(this.x - camera.x, this.y - camera.y, this.radius + 3, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.restore();
-    }
     this.damageNumbers = this.damageNumbers.filter(d => Date.now() - d.time < 700);
     this.damageNumbers.forEach(d => {
       ctx.save();
@@ -1281,12 +1274,12 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function getStageEnemyTypes() {
-  if (finalBossActive) return [ENEMY_TYPES[5]]; // Only Final Boss
-  if (stage === 0) return [ENEMY_TYPES[0], ENEMY_TYPES[1]]; // Basic, Fast
+  if (finalBossActive) return [ENEMY_TYPES[6]]; // Only Final Boss
+  if (stage === 0) return [ENEMY_TYPES[0], ENEMY_TYPES[2]]; // Basic, Fast
   if (stage === 1) return [ENEMY_TYPES[0], ENEMY_TYPES[1], ENEMY_TYPES[2]]; // Basic, Fast, Tank
   if (stage === 2) return [ENEMY_TYPES[0], ENEMY_TYPES[2], ENEMY_TYPES[3]]; // Basic, Tank, Burning
   if (stage === 3) return [ENEMY_TYPES[0], ENEMY_TYPES[2], ENEMY_TYPES[4]]; // Basic, Tank, Range
-  if (stage === 4) return [ENEMY_TYPES[1], ENEMY_TYPES[2], ENEMY_TYPES[3], ENEMY_TYPES[4]]; // Fast, Tank, Burning, Range
+  if (stage === 4) return [ENEMY_TYPES[1], ENEMY_TYPES[2], ENEMY_TYPES[3], ENEMY_TYPES[4], ENEMY_TYPES[5]]; // Fast, Tank, Burning, Range
   return [ENEMY_TYPES[0], ENEMY_TYPES[1]];
 }
 
