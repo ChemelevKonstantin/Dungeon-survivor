@@ -983,6 +983,7 @@ function render() {
   if (gameOver) {
     // Game Over overlay styled like pause, but bigger
     ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform to cover full canvas
     ctx.globalAlpha = 0.85;
     ctx.fillStyle = '#4a0707'; // bloody dark red
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -995,6 +996,12 @@ function render() {
     ctx.restore();
   }
   if (win) {
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform to cover full canvas
+    ctx.globalAlpha = 0.85;
+    ctx.fillStyle = '#18120a'; // or another win background color if desired
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.globalAlpha = 1;
     // Show win image instead of text
     const winImg = new window.Image();
     winImg.src = 'images/win.png';
@@ -1010,6 +1017,7 @@ function render() {
         ctx.drawImage(winImg, (canvas.width - imgWidth) / 2, (canvas.height - imgHeight) / 2, imgWidth, imgHeight);
       };
     }
+    ctx.restore();
   }
   // Draw boss debug info
   if (finalBossActive && boss) {
@@ -1364,7 +1372,7 @@ howToPlayModal.innerHTML = `
   <div style="background: #23262e; border: 10px solid #3a2a1a; border-radius: 28px; color: #ffb347; padding: 36px 48px; max-width: 420px; text-align: center; font-family: 'Luckiest Guy', 'Comic Sans MS', cursive; box-shadow: 0 0 32px 8px #000a; position: relative;">
     <h2 style='font-family: Cinzel, serif; color: #ffe066; margin-bottom: 18px;'>How to Play</h2>
     <ul style='text-align:left; color: #ffe066; font-family: Montserrat, Arial, sans-serif; font-size: 1.1em; margin-bottom: 18px;'>
-      <li>Move: <b>WASD</b> or <b>Arrow Keys</b> or <b>click and move Mouse</b> or connected <b>gamepad</b> (mobile friendly)</li>
+      <li>Move: <b>WASD</b> or <b>Arrow Keys</b> or click and move <b>Mouse</b> or connected <b>gamepad</b> (mobile friendly)</li>
       <li>Survive as long as you can in the dungeon</li>
       <li>Defeat enemies to gain XP and level up</li>
       <li>Choose upgrades to grow stronger</li>

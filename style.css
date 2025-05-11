@@ -512,8 +512,9 @@ canvas {
 #startMenuButtons {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 2px;
   align-items: center;
+  margin-top: -220px;
 }
 #startMenuButtons button {
   background: none;
