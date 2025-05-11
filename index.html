@@ -9,6 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap" rel="stylesheet">
 </head>
 <body>
+  <div id="startMenu">
+    <img src="images/startmenu.png" alt="Start Menu" id="startMenuImg">
+    <div id="startMenuButtons">
+      <button id="startGameBtn">Dive Deep</button>
+      <button id="optionsBtn">Options</button>
+    </div>
+  </div>
   <canvas id="gameCanvas"></canvas>
   <!-- Joystick for mobile/touch controls -->
   <div id="joystick-container">
@@ -42,6 +49,12 @@
   </div>
   <div id="upgradeModal" style="display:none;"></div>
   <div id="upgradeList"></div>
+  <div id="xpBarContainer">
+    <span id="xpBarLevel"></span>
+    <span id="xpBarToNext"></span>
+    <div id="xpBar"></div>
+    <span id="xpBarCurrent"></span>
+  </div>
   <script src="main.js"></script>
 </body>
 </html> 

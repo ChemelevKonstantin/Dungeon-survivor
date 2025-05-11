@@ -234,6 +234,18 @@ const joystickKnob = document.getElementById('joystick-knob');
 let joystickCenter = { x: 0, y: 0 };
 let joystickRadius = 50; // px, matches #joystick-base half width
 
+// Hide joystick if not on a touch device
+function isTouchDevice() {
+  return (
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  );
+}
+if (!isTouchDevice()) {
+  joystickContainer.style.display = 'none';
+}
+
 function getTouchPos(e) {
   const rect = joystickBase.getBoundingClientRect();
   let touch = e.touches ? e.touches[0] : e;
@@ -1023,6 +1035,14 @@ function updateHUD() {
   healthEl.textContent = `HP: ${Math.floor(player.hp)}`;
   shieldEl.textContent = `Shield: ${Math.floor(shield)}/${maxShield} (+${shieldRegen}/sec)`;
   xpEl.textContent = `XP: ${xp}`;
+  // XP Bar update
+  const xpBar = document.getElementById('xpBar');
+  const xpBarToNext = document.getElementById('xpBarToNext');
+  const xpBarCurrent = document.getElementById('xpBarCurrent');
+  let percent = Math.min(1, totalXP / xpToNext);
+  xpBar.style.setProperty('--xp-bar-fill', (percent * 100) + '%');
+  xpBarToNext.textContent = `${xpToNext} XP`;
+  xpBarCurrent.textContent = `${totalXP} XP`;
   let elapsed, min, sec;
   if (win) {
     // Freeze timer at win time
@@ -1081,6 +1101,8 @@ function updateHUD() {
     upgradeList.innerHTML = html;
     upgradeList.style.display = '';
   }
+  const xpBarLevel = document.getElementById('xpBarLevel');
+  xpBarLevel.textContent = `Lv ${level}`;
 }
 
 // Auto-attack Mechanic
@@ -1114,7 +1136,6 @@ function init() {
   resizeCanvas();
   player = new Player(worldWidth / 2, worldHeight / 2);
   spawnEnemies();
-  gameLoop();
 }
 
 function showUpgradeModal() {
@@ -1227,5 +1248,25 @@ function updateBoss(player) {
     boss.minionTimer = 180;
   }
 }
+
+// Start menu logic
+const startMenu = document.getElementById('startMenu');
+const startGameBtn = document.getElementById('startGameBtn');
+let gameStarted = false;
+
+function showStartMenu() {
+  startMenu.style.display = 'flex';
+  gameStarted = false;
+}
+function hideStartMenu() {
+  startMenu.style.display = 'none';
+  gameStarted = true;
+  gameLoop(); // Start the game loop only once
+}
+startGameBtn.addEventListener('click', () => {
+  hideStartMenu();
+});
+
+showStartMenu();
 
 init();
